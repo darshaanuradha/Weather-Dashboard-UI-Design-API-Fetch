@@ -30,10 +30,42 @@
 
     <style>
         body {
-            /* Deep, modern gradient background */
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #000000 100%);
+            /* Animated multi-layer gradient background */
+            background: linear-gradient(135deg, #0b1224 0%, #1f1a4d 45%, #081122 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 16s ease infinite;
             color: #f8fafc;
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 9999px;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::before {
+            width: 260px;
+            height: 260px;
+            background: rgba(14, 165, 233, 0.18);
+            top: -70px;
+            left: -80px;
+            animation: drift 12s ease-in-out infinite;
+        }
+
+        body::after {
+            width: 320px;
+            height: 320px;
+            background: rgba(59, 130, 246, 0.12);
+            bottom: -120px;
+            right: -90px;
+            animation: drift 14s ease-in-out infinite reverse;
         }
 
         /* Glassmorphism Utilities */
@@ -43,12 +75,13 @@
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
         }
 
         .glass-card {
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
         }
@@ -69,8 +102,50 @@
             box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
         }
 
+        .glass-card:hover i {
+            transform: scale(1.08);
+            transition: transform 0.3s ease;
+        }
+
         .glass-card:hover::before {
             left: 200%;
+        }
+
+        .card-enter {
+            opacity: 0;
+            transform: translateY(20px) scale(0.98);
+            animation: cardIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            animation-delay: var(--card-delay, 0ms);
+        }
+
+        .icon-pop {
+            animation: iconPop 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .ambient-orb {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(45px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-orb.one {
+            width: 140px;
+            height: 140px;
+            top: 10%;
+            right: 8%;
+            background: rgba(96, 165, 250, 0.18);
+            animation: pulseGlow 6s ease-in-out infinite;
+        }
+
+        .ambient-orb.two {
+            width: 120px;
+            height: 120px;
+            bottom: 8%;
+            left: 6%;
+            background: rgba(14, 165, 233, 0.16);
+            animation: pulseGlow 7s ease-in-out infinite reverse;
         }
 
         /* Custom Scrollbar */
@@ -99,12 +174,54 @@
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate3d(0, 0, 0); }
+            50% { transform: translate3d(20px, -18px, 0); }
+        }
+
+        @keyframes cardIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes iconPop {
+            0% { transform: scale(0.85) translateY(8px); opacity: 0.4; }
+            70% { transform: scale(1.05) translateY(-2px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 0.55; }
+            50% { transform: scale(1.15); opacity: 0.95; }
+        }
+
+        @media (max-width: 640px) {
+            .glass-panel {
+                border-radius: 1.5rem;
+            }
+
+            .glass-card {
+                border-radius: 1.25rem;
+            }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8 flex items-center justify-center font-sans antialiased selection:bg-blue-500/30">
+<body class="p-3 sm:p-4 md:p-8 flex items-center justify-center font-sans antialiased selection:bg-blue-500/30 relative">
+
+    <div class="ambient-orb one"></div>
+    <div class="ambient-orb two"></div>
 
     <!-- App Container -->
-    <div class="glass-panel w-full max-w-6xl rounded-[2rem] p-6 md:p-10 flex flex-col gap-8 relative z-10">
+    <div class="glass-panel w-full max-w-6xl rounded-[2rem] p-4 sm:p-6 md:p-10 flex flex-col gap-6 md:gap-8 relative z-10">
         
         <!-- Header & Search -->
         <header class="flex flex-col md:flex-row justify-between items-center gap-6">
@@ -139,24 +256,24 @@
         </div>
 
         <!-- Main Content Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" id="dashboard-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-8" id="dashboard-content">
             
             <!-- Left Column: Primary Weather -->
-            <div class="glass-card rounded-[2rem] p-8 flex flex-col items-center justify-center text-center lg:col-span-1 relative">
+            <div class="glass-card rounded-[2rem] p-6 sm:p-8 flex flex-col items-center justify-center text-center lg:col-span-1 relative">
                 <!-- Decorative Glow -->
                 <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-500/20 rounded-full blur-[60px] pointer-events-none"></div>
 
-                <h2 class="text-4xl font-bold mb-2 tracking-tight" id="city-name">--</h2>
+                <h2 class="text-3xl sm:text-4xl font-bold mb-2 tracking-tight" id="city-name">--</h2>
                 <p class="text-gray-400 text-sm mb-6 flex items-center gap-2">
                     <i class="fa-solid fa-location-dot"></i> <span id="country-name">--</span>
                 </p>
 
                 <div class="mb-6 relative">
-                    <img id="weather-icon" src="https://openweathermap.org/img/wn/02d@4x.png" alt="Weather Icon" class="w-40 h-40 object-contain drop-shadow-2xl float-anim filter brightness-110">
+                    <img id="weather-icon" src="https://openweathermap.org/img/wn/02d@4x.png" alt="Weather Icon" class="w-32 h-32 sm:w-40 sm:h-40 object-contain drop-shadow-2xl float-anim filter brightness-110">
                 </div>
 
                 <div class="flex items-start justify-center gap-1">
-                    <span class="text-7xl font-bold tracking-tighter" id="temperature">--</span>
+                    <span class="text-6xl sm:text-7xl font-bold tracking-tighter" id="temperature">--</span>
                     <span class="text-2xl text-blue-400 mt-2 font-medium">°C</span>
                 </div>
                 
@@ -165,7 +282,7 @@
             </div>
 
             <!-- Right Column: Details Grid -->
-            <div class="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
                 
                 <!-- Detail Card: Wind -->
                 <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
@@ -286,10 +403,17 @@
         const searchBtn = document.getElementById('search-btn');
         const errorMsg = document.getElementById('error-message');
         const dashboardContent = document.getElementById('dashboard-content');
+        const weatherIcon = document.getElementById('weather-icon');
         
         // Setup Date
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+
+        // Staggered entrance animation for cards on first load
+        document.querySelectorAll('.glass-card').forEach((card, index) => {
+            card.style.setProperty('--card-delay', `${index * 90}ms`);
+            card.classList.add('card-enter');
+        });
 
         // Fetch Weather Data
         async function fetchWeather(city) {
@@ -329,7 +453,10 @@
             
             // High-res Icon
             const iconCode = data.weather[0].icon;
-            document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
+            weatherIcon.src = `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
+            weatherIcon.classList.remove('icon-pop');
+            void weatherIcon.offsetWidth;
+            weatherIcon.classList.add('icon-pop');
 
             // Details
             document.getElementById('wind-speed').textContent = data.wind.speed;
@@ -363,6 +490,17 @@
             // Using timezone offset from API to display correct local time for the searched city
             document.getElementById('sunrise').textContent = formatTime(data.sys.sunrise, data.timezone);
             document.getElementById('sunset').textContent = formatTime(data.sys.sunset, data.timezone);
+
+            dashboardContent.animate(
+                [
+                    { opacity: 0.65, transform: 'translateY(8px)' },
+                    { opacity: 1, transform: 'translateY(0)' }
+                ],
+                {
+                    duration: 420,
+                    easing: 'cubic-bezier(0.22, 1, 0.36, 1)'
+                }
+            );
         }
 
         // Event Listeners
