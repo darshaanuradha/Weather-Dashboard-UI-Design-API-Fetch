@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Weather Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        glass: 'rgba(255, 255, 255, 0.05)',
+                        glassHover: 'rgba(255, 255, 255, 0.1)',
+                        glassBorder: 'rgba(255, 255, 255, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            /* Deep, modern gradient background */
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #000000 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
+            transform: skewX(-20deg);
+            transition: 0.5s;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card:hover::before {
+            left: 200%;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* Loader Animation */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Floating animation for weather icon */
+        .float-anim {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex items-center justify-center font-sans antialiased selection:bg-blue-500/30">
+
+    <!-- App Container -->
+    <div class="glass-panel w-full max-w-6xl rounded-[2rem] p-6 md:p-10 flex flex-col gap-8 relative z-10">
+        
+        <!-- Header & Search -->
+        <header class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-4">
+                <div class="bg-blue-500/20 p-3 rounded-2xl border border-blue-500/30">
+                    <i class="fa-solid fa-cloud-sun text-blue-400 text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Weather<span class="text-blue-400">Dash</span></h1>
+                    <p class="text-xs text-gray-400" id="current-date">Loading date...</p>
+                </div>
+            </div>
+
+            <div class="w-full md:w-96 relative group">
+                <input 
+                    type="text" 
+                    id="search-input"
+                    placeholder="Search for a city..." 
+                    class="w-full bg-black/20 border border-white/10 rounded-full py-3 pl-12 pr-4 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
+                    autocomplete="off"
+                >
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-400 transition-colors"></i>
+                <button id="search-btn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-arrow-right text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Error Message Container -->
+        <div id="error-message" class="hidden bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm text-center">
+            City not found. Please try again.
+        </div>
+
+        <!-- Main Content Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" id="dashboard-content">
+            
+            <!-- Left Column: Primary Weather -->
+            <div class="glass-card rounded-[2rem] p-8 flex flex-col items-center justify-center text-center lg:col-span-1 relative">
+                <!-- Decorative Glow -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-blue-500/20 rounded-full blur-[60px] pointer-events-none"></div>
+
+                <h2 class="text-4xl font-bold mb-2 tracking-tight" id="city-name">--</h2>
+                <p class="text-gray-400 text-sm mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot"></i> <span id="country-name">--</span>
+                </p>
+
+                <div class="mb-6 relative">
+                    <img id="weather-icon" src="https://openweathermap.org/img/wn/02d@4x.png" alt="Weather Icon" class="w-40 h-40 object-contain drop-shadow-2xl float-anim filter brightness-110">
+                </div>
+
+                <div class="flex items-start justify-center gap-1">
+                    <span class="text-7xl font-bold tracking-tighter" id="temperature">--</span>
+                    <span class="text-2xl text-blue-400 mt-2 font-medium">°C</span>
+                </div>
+                
+                <p class="text-xl capitalize text-gray-200 mt-4 font-medium" id="weather-desc">--</p>
+                <p class="text-sm text-gray-400 mt-2">Feels like <span id="feels-like" class="text-white">--°C</span></p>
+            </div>
+
+            <!-- Right Column: Details Grid -->
+            <div class="lg:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+                
+                <!-- Detail Card: Wind -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center gap-3 text-gray-400 mb-4 text-sm">
+                        <i class="fa-solid fa-wind text-blue-400"></i> Wind
+                    </div>
+                    <div>
+                        <div class="flex items-end gap-1">
+                            <span class="text-3xl font-semibold" id="wind-speed">--</span>
+                            <span class="text-sm text-gray-400 mb-1">m/s</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2 flex items-center gap-2">
+                            Direction: <span id="wind-deg" class="text-gray-300">--°</span> 
+                            <i id="wind-arrow" class="fa-solid fa-location-arrow text-blue-400/70" style="transform: rotate(0deg);"></i>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Detail Card: Humidity -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center gap-3 text-gray-400 mb-4 text-sm">
+                        <i class="fa-solid fa-droplet text-blue-400"></i> Humidity
+                    </div>
+                    <div>
+                        <div class="flex items-end gap-1">
+                            <span class="text-3xl font-semibold" id="humidity">--</span>
+                            <span class="text-sm text-gray-400 mb-1">%</span>
+                        </div>
+                        <div class="w-full bg-black/30 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div id="humidity-bar" class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Card: Pressure -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center gap-3 text-gray-400 mb-4 text-sm">
+                        <i class="fa-solid fa-gauge-high text-blue-400"></i> Pressure
+                    </div>
+                    <div>
+                        <div class="flex items-end gap-1">
+                            <span class="text-3xl font-semibold" id="pressure">--</span>
+                            <span class="text-sm text-gray-400 mb-1">hPa</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Sea Level: <span id="sea-level" class="text-gray-300">--</span></p>
+                    </div>
+                </div>
+
+                <!-- Detail Card: Visibility -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center gap-3 text-gray-400 mb-4 text-sm">
+                        <i class="fa-regular fa-eye text-blue-400"></i> Visibility
+                    </div>
+                    <div>
+                        <div class="flex items-end gap-1">
+                            <span class="text-3xl font-semibold" id="visibility">--</span>
+                            <span class="text-sm text-gray-400 mb-1">km</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2" id="visibility-desc">Clear view</p>
+                    </div>
+                </div>
+
+                <!-- Detail Card: Clouds -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-between">
+                    <div class="flex items-center gap-3 text-gray-400 mb-4 text-sm">
+                        <i class="fa-solid fa-cloud text-blue-400"></i> Cloud Cover
+                    </div>
+                    <div>
+                        <div class="flex items-end gap-1">
+                            <span class="text-3xl font-semibold" id="clouds">--</span>
+                            <span class="text-sm text-gray-400 mb-1">%</span>
+                        </div>
+                        <div class="w-full bg-black/30 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div id="clouds-bar" class="bg-blue-400 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Card: Sun & Moon (Sunrise/Sunset) -->
+                <div class="glass-card rounded-3xl p-6 flex flex-col justify-center gap-4">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-sun text-yellow-400 text-lg"></i>
+                            <div>
+                                <p class="text-xs text-gray-400">Sunrise</p>
+                                <p class="text-sm font-semibold" id="sunrise">--:--</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-moon text-blue-200 text-lg"></i>
+                            <div>
+                                <p class="text-xs text-gray-400">Sunset</p>
+                                <p class="text-sm font-semibold" id="sunset">--:--</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Use the provided API key
+        const API_KEY = 'f4f69c47da7ff787ad8c3349ffa41cfa';
+        const DEFAULT_CITY = 'Kandy';
+
+        // DOM Elements
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const errorMsg = document.getElementById('error-message');
+        const dashboardContent = document.getElementById('dashboard-content');
+        
+        // Setup Date
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', dateOptions);
+
+        // Fetch Weather Data
+        async function fetchWeather(city) {
+            try {
+                // Show loading state implicitly (could add spinner logic here)
+                errorMsg.classList.add('hidden');
+                dashboardContent.style.opacity = '0.5';
+
+                // Fetching in metric units to get Celsius directly
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
+                
+                if (!response.ok) {
+                    throw new Error('City not found');
+                }
+
+                const data = await response.json();
+                updateDashboard(data);
+                
+                dashboardContent.style.opacity = '1';
+                dashboardContent.style.transition = 'opacity 0.3s ease';
+
+            } catch (error) {
+                console.error("Error fetching weather:", error);
+                errorMsg.classList.remove('hidden');
+                dashboardContent.style.opacity = '1';
+            }
+        }
+
+        // Update UI with Data
+        function updateDashboard(data) {
+            // Main Info
+            document.getElementById('city-name').textContent = data.name;
+            document.getElementById('country-name').textContent = data.sys.country;
+            document.getElementById('temperature').textContent = Math.round(data.main.temp);
+            document.getElementById('feels-like').textContent = `${Math.round(data.main.feels_like)}°C`;
+            document.getElementById('weather-desc').textContent = data.weather[0].description;
+            
+            // High-res Icon
+            const iconCode = data.weather[0].icon;
+            document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
+
+            // Details
+            document.getElementById('wind-speed').textContent = data.wind.speed;
+            
+            // Wind Direction formatting
+            const deg = data.wind.deg || 0;
+            document.getElementById('wind-deg').textContent = `${deg}°`;
+            // Rotate arrow based on wind direction (subtract 45 to align fontawesome icon baseline)
+            document.getElementById('wind-arrow').style.transform = `rotate(${deg - 45}deg)`;
+
+            document.getElementById('humidity').textContent = data.main.humidity;
+            document.getElementById('humidity-bar').style.width = `${data.main.humidity}%`;
+
+            document.getElementById('pressure').textContent = data.main.pressure;
+            document.getElementById('sea-level').textContent = data.main.sea_level ? `${data.main.sea_level} hPa` : 'N/A';
+
+            const visKm = (data.visibility / 1000).toFixed(1);
+            document.getElementById('visibility').textContent = visKm;
+            document.getElementById('visibility-desc').textContent = visKm > 8 ? "Excellent" : visKm > 4 ? "Good" : "Poor";
+
+            document.getElementById('clouds').textContent = data.clouds.all;
+            document.getElementById('clouds-bar').style.width = `${data.clouds.all}%`;
+
+            // Time Formatting
+            const formatTime = (timestamp, timezoneOffset) => {
+                // Use UTC and apply the provided timezone offset manually to get local time of the city
+                const date = new Date((timestamp + timezoneOffset) * 1000);
+                return date.toUTCString().match(/(\d{2}:\d{2})/)[0];
+            };
+
+            // Using timezone offset from API to display correct local time for the searched city
+            document.getElementById('sunrise').textContent = formatTime(data.sys.sunrise, data.timezone);
+            document.getElementById('sunset').textContent = formatTime(data.sys.sunset, data.timezone);
+        }
+
+        // Event Listeners
+        searchBtn.addEventListener('click', () => {
+            const city = searchInput.value.trim();
+            if (city) fetchWeather(city);
+        });
+
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const city = searchInput.value.trim();
+                if (city) fetchWeather(city);
+            }
+        });
+
+        // Initialize App
+        fetchWeather(DEFAULT_CITY);
+
+    </script>
+</body>
+</html>
