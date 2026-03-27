@@ -1,2 +1,58 @@
-🌤️ Modern Weather DashboardA sleek, fully responsive, glassmorphism-themed weather dashboard built with HTML, Tailwind CSS, and Vanilla JavaScript. It fetches real-time weather data from the OpenWeatherMap API to provide detailed meteorological insights for any city in the world.✨ FeaturesReal-Time Weather Data: Accurate and up-to-date weather information powered by OpenWeatherMap.Global City Search: Search for any city worldwide to get instant weather updates.Glassmorphism UI: A modern, premium aesthetic with frosted glass panels, glowing accents, and smooth hover animations.Comprehensive Metrics: Displays temperature, "feels like" temperature, wind speed and direction, humidity, atmospheric pressure, visibility, and cloud cover.Dynamic Time Calculations: Calculates and displays local sunrise and sunset times based on the searched city's timezone.Fully Responsive: Seamlessly adapts to mobile, tablet, and desktop screens.🛠️ Technologies UsedHTML5 - Markup structure.Tailwind CSS - Utility-first CSS framework for rapid UI styling and responsiveness.Vanilla JavaScript - Core logic for API fetching, DOM manipulation, and data formatting.OpenWeatherMap API - Source of real-time weather data.FontAwesome - Vector icons for weather metrics and UI elements.Google Fonts (Poppins) - Clean, modern typography.🚀 How to RunDownload the File: Clone this repository or download the index.html file to your local machine.Open in Browser: Double-click the index.html file to open it in your default web browser. No local server is strictly required, though using one (like VS Code Live Server) is recommended for the best development experience.🔑 API Key ConfigurationThis project comes pre-configured with an OpenWeatherMap API key for demonstration purposes. If you plan to deploy this application or use it extensively, it is highly recommended to use your own API key.To add your own API key:Create a free account at OpenWeatherMap.Generate a new API key from your dashboard.Open index.html in a text editor.Locate the following line in the <script> section (around line 250):const API_KEY = 'YOUR_API_KEY_HERE';
-Replace the existing key with your newly generated API key.📱 Screenshots(You can add screenshots of your dashboard here later by replacing this text with standard markdown image syntax: ![Alt text](image-url.png))📄 LicenseThis project is open-source and available for personal or educational use.
+# Modern Weather Dashboard
+
+A sleek, fully responsive, glassmorphism-themed weather dashboard built with HTML, Tailwind CSS, and Vanilla JavaScript.
+
+The app fetches real-time weather data from the OpenWeatherMap API and displays detailed weather insights for any city in the world.
+
+## Features
+
+- Real-Time Weather Data: Accurate and up-to-date weather information powered by OpenWeatherMap.
+- Global City Search: Search any city worldwide and get instant weather updates.
+- Glassmorphism UI: Frosted glass panels, glowing accents, and smooth hover effects for a premium look.
+- Comprehensive Metrics: Displays temperature, feels-like temperature, wind speed and direction, humidity, pressure, visibility, and cloud cover.
+- Dynamic Time Calculations: Calculates local sunrise and sunset based on the selected city's timezone.
+- Fully Responsive: Works smoothly on mobile, tablet, and desktop screens.
+
+## Technologies Used
+
+- HTML5: Markup structure.
+- Tailwind CSS: Utility-first styling and responsive layout.
+- Vanilla JavaScript: API fetching, DOM updates, and data formatting.
+- OpenWeatherMap API: Real-time weather data source.
+- Font Awesome: Weather and UI icons.
+- Google Fonts (Poppins): Clean, modern typography.
+
+## How to Run
+
+1. Clone this repository or download the `index.html` file.
+2. Open `index.html` in your browser.
+3. Optional: Use a local server (for example, VS Code Live Server) for a smoother development workflow.
+
+## API Key Configuration
+
+This project is pre-configured with an OpenWeatherMap API key for demo use.
+
+For production or long-term use, replace it with your own key:
+
+1. Create a free account at [OpenWeatherMap](https://openweathermap.org/).
+2. Generate a new API key from your dashboard.
+3. Open `index.html` in your editor.
+4. Find this line inside the script section:
+
+```js
+const API_KEY = 'YOUR_API_KEY_HERE';
+```
+
+5. Replace it with your own API key.
+
+## Screenshots
+
+Add screenshots here using Markdown image syntax:
+
+```md
+![Dashboard Screenshot](path/to/screenshot.png)
+```
+
+## License
+
+This project is open-source and available for personal or educational use.
